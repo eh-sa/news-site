@@ -24,31 +24,32 @@ export interface UserInfo {
 })
 export class GoogleApiService {
 
-  // userProfileSubject = new Subject<UserInfo>()
+  userProfileSubject = new Subject<UserInfo>()
 
-  constructor(private readonly oauthService: OAuthService) { }
-//     oauthService.configure(oauthConfig)
-//     oauthService.logoutUrl = 'https://www.google.com/accounts/Logout'
-//     oauthService.loadDiscoveryDocument().then(() => {
-//       oauthService.tryLoginImplicitFlow().then(() => {
-//         if (!oauthService.hasValidAccessToken()) {
-//           oauthService.initLoginFlow()
-//         } else {
-//           oauthService.loadUserProfile().then((userProfile) => {
-//             console.log(JSON.stringify(userProfile))
-//             this.userProfileSubject.next(userProfile as UserInfo)
-//           } )
-//         }
-//       } )
-//     } )
-//   }
+  constructor(private readonly oauthService: OAuthService) { 
+    oauthService.configure(oauthConfig)
+    oauthService.logoutUrl = 'https://www.google.com/accounts/Logout'
+    oauthService.loadDiscoveryDocument().then(() => {
+      oauthService.tryLoginImplicitFlow().then(() => {
+        if (!oauthService.hasValidAccessToken()) {
+          oauthService.initLoginFlow()
+        } else {
+          oauthService.loadUserProfile().then((userProfile) => {
+            console.log(JSON.stringify(userProfile))
+            this.userProfileSubject.next(userProfile as UserInfo)
+          } )
+        }
+      } )
+    } )
+  }
 
-//   isLoggedIn(): boolean {
-//   return this.oauthService.hasValidAccessToken()
-// }
-
-//   signOut() {
-//     this.oauthService.logOut()
-//   }
+  isLoggedIn(): boolean {
+    return this.oauthService.hasValidAccessToken()
+  }
+  
+    signOut() {
+      this.oauthService.logOut()
+    }
 
 }
+

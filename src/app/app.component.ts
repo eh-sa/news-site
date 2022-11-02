@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { NewsapiService } from './services/newsapi.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Articles, initialArticles } from './article.model';
@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+
+ @ViewChild('home') home: ElementRef;
 
   searchForm: FormGroup;
   searchTerm: string;
@@ -25,6 +27,8 @@ export class AppComponent {
   ngOnInit() {
     this.searchForm = this.buildSearchForm();
   }
+
+  
 
   buildSearchForm(): FormGroup {
     return this.fb.group({
@@ -42,5 +46,6 @@ export class AppComponent {
     this.newsApi.setSearchTerm(this.searchForm.get('searchTerm').value);
     this.router.navigate(['/search']);
   }
+  
   
 }

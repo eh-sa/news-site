@@ -7,15 +7,20 @@ import { NewsapiService } from 'src/app/services/newsapi.service';
 })
 export class TechnologyComponent implements OnInit {
 
+
+  max = 5;
+  rate = 2;
+  isReadonly = false;
   constructor(private api:NewsapiService) { }
 //techNewsData
   techNewsData: any = [];
   
   ngOnInit(): void {
     this.api.tcTechNews().subscribe((result) => {
-      console.log(result.articles);
       this.techNewsData = result.articles;
     })
   }
+
+
 
 }
