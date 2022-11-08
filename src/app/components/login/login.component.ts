@@ -1,11 +1,10 @@
 import { Component, OnInit , NgZone } from '@angular/core';
 import { AuthService } from 'src/app/services/auth.service';
-import { GoogleApiService, UserInfo } from 'src/app/services/google-api.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CredentialResponse, PromptMomentNotification } from 'google-one-tap';
 import { environment } from 'src/environments/environment';
-
+import { Subject } from 'rxjs';
+import { GoogleApiService } from 'src/app/services/google-api.service';
 
 @Component({
   selector: 'app-login',
@@ -13,34 +12,32 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-
-  // userInfo?: UserInfo;
-
-  // constructor(private readonly googleApi: GoogleApiService, private router : Router) { 
-  //   googleApi.userProfileSubject.subscribe(info => {
-  //     this.userInfo = info
-  //     console.log("user info",info)
-  //   })
-  // }
   
   private clientId = environment.clientId
+  
+  // userProfileSubject = new Subject<UserInfoDetail>()
 
   constructor(
     private router: Router,
     private service: AuthService,
-    private _ngZone: NgZone) { }
-  // isLoggedIn(): boolean {
-  //   return this.googleApi.isLoggedIn()
-    
+    private _ngZone: NgZone,
+    private readonly googleApi: GoogleApiService) {
+      if (!googleApi.isLoggedIn()) {
+        googleApi.tryLoginImplicitFlow().then(() => {
+          googleApi.initImplicitFlow()
+        })
+      } else {
+        this._ngZone.run(() => {
+          this.router.navigate(['/dashboard']);
+        });
+      }
+    }
 
-  // }
-
-  // logOut() {
-  //   this.googleApi.signOut()
-  // }
 
   ngOnInit(): void {
 
+      
+    
     // @ts-ignore
     window.onGoogleLibraryLoad = () => {
       // @ts-ignore
@@ -62,16 +59,42 @@ export class LoginComponent implements OnInit {
   }
 
   async handleCredentialResponse(response: CredentialResponse) {
-    await this.service.LoginWithGoogle(response.credential).subscribe(
-      (x:any) => {
-        localStorage.setItem("token", x.token);
-        this._ngZone.run(() => {
-          this.router.navigate(['/logout']);
-        })},
-      (error:any) => {
-          console.log(error);
-        }
-      );  
+    let errorMessage: string | null = null
+    this.service.LoginWithGoogle(response.credential).subscribe(
+      {
+        next: (x) => {
+          if (!x.token) {
+            errorMessage = 'no token'
+            return
+          }
+          console.log(x)
+          // debugger
+          localStorage.setItem("token", x.token);
+          // this.service.getUserInfo(response.credential).subscribe({
+          //   next: (userInfo) => {
+          //     if (!userInfo) return
+          //     debugger
+          //   },
+          //   error: (e) => {
+          //     console.error(e)
+          //   },
+          //   complete() {
+          //     console.log('userinfo request complete')
+          //   }
+          // })
+        },
+        error: (e) => {
+          errorMessage = e.message
+          console.error(e)
+        },
+        complete: () => {
+          if (errorMessage !== null) return
+          this._ngZone.run(() => {
+            this.router.navigate(['/dashboard']);
+          });
+        } 
+      }
+    );  
 }
 
 }
